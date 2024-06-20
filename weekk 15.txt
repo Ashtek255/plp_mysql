@@ -1,0 +1,112 @@
+The Interests column appears to contain lists of interests, which will need to be unpacked for further analysis. We will begin by splitting the interests into individual rows and then exploring the most common interests. Given that the data is already in a CSV format, we can treat it as a SQL table and proceed with the analysis using SQL queries.
+Python
+import pandas as pd
+
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+
+# Read the CSV file into a DataFrame
+df = pd.read_csv('SocialMediaUsersDataset (1).csv')
+
+# Display the first 5 rows
+print(df.head().to_markdown(index=False, numalign="left", stralign="left"))
+
+# Print the column names and their data types
+print(df.info())
+
+Code output
+| UserID   | Name               | Gender   | DOB        | Interests                                                           | City        | Country   |
+|:---------|:-------------------|:---------|:-----------|:--------------------------------------------------------------------|:------------|:----------|
+| 1        | Jesse Lawhorn      | Female   | 1958-10-15 | 'Movies', 'Fashion', 'Fashion', 'Books'                             | Sibolga     | Indonesia |
+| 2        | Stacy Payne        | Female   | 2004-07-21 | 'Gaming', 'Finance and investments', 'Outdoor activities', 'Travel' | Al Abyār    | Libya     |
+| 3        | Katrina Nicewander | Female   | 2000-02-07 | 'DIY and crafts', 'Music', 'Science', 'Fashion'                     | Wādī as Sīr | Jordan    |
+| 4        | Eric Yarbrough     | Male     | 1985-04-14 | 'Outdoor activities', 'Cars and automobiles'                        | Matera      | Italy     |
+| 5        | Daniel Adkins      | Female   | 1955-09-18 | 'Politics', 'History'                                               | Biruaca     | Venezuela |
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 100000 entries, 0 to 99999
+Data columns (total 7 columns):
+ #   Column     Non-Null Count   Dtype 
+---  ------     --------------   ----- 
+ 0   UserID     100000 non-null  int64 
+ 1   Name       100000 non-null  object
+ 2   Gender     100000 non-null  object
+ 3   DOB        100000 non-null  object
+ 4   Interests  100000 non-null  object
+ 5   City       100000 non-null  object
+ 6   Country    100000 non-null  object
+dtypes: int64(1), object(6)
+memory usage: 5.3+ MB
+None
+
+
+Use code with caution.
+content_copy
+The data appears to be in a suitable format for our analysis. The Interests column is of type Object, which aligns with our observation that it contains lists of interests.
+Given that the Interests column contains values such as "'Movies', 'Fashion', 'Fashion', 'Books'", we will need to remove the single quotes and split these into individual interests. We can then proceed with counting the occurrences of each interest and identifying the most frequent ones.
+Python
+# Remove single quotes and split the `Interests` column into a list
+df['Interests'] = df['Interests'].astype(str).str.replace(r"'", '', regex=True).str.split(', ')
+
+# Explode the list of interests into individual rows
+exploded_df = df.explode('Interests')
+
+# Count the occurrences of each unique interest
+interest_counts = exploded_df['Interests'].value_counts()
+
+# Display the top 10 interests
+print("Top 10 Interests:")
+print(interest_counts.head(10).to_markdown(numalign="left", stralign="left"))
+
+Code output
+Top 10 Interests:
+| Interests            | count   |
+|:---------------------|:--------|
+| Fashion              | 20077   |
+| Pets                 | 10164   |
+| Cooking              | 10163   |
+| Fitness              | 10108   |
+| Movies               | 10102   |
+| Gaming               | 10093   |
+| Travel               | 10048   |
+| Cars and automobiles | 10048   |
+| Outdoor activities   | 10041   |
+| Books                | 10029   |
+
+
+Use code with caution.
+content_copy
+Difficulties
+The dataset is relatively straightforward, with no missing values. However, the Interests column presented a challenge as it contained lists of interests, which needed to be unpacked for further analysis.
+Interesting Observation
+One interesting aspect of the dataset is the global distribution of users. The dataset includes users from various countries, suggesting a diverse user base for the social media platform.
+Cool Facts
+The most popular interest among users is 'Fashion', followed by 'Pets' and 'Cooking'.
+The distribution of interests is quite even across the top categories, with 'Fashion' being the only standout.
+Questions and Answers
+Table 1: Top 10 Interests
+SELECT Interests, COUNT(*) AS count
+FROM SocialMediaUsers
+GROUP BY Interests
+ORDER BY count DESC
+LIMIT 10;
+
+Table 2: Top 3 Interests in Each Country (Sample)
+SELECT Country, Interests, COUNT(*) AS count
+FROM SocialMediaUsers
+WHERE Country IN ('Indonesia', 'Libya', 'Jordan', 'Italy', 'Venezuela') 
+GROUP BY Country, Interests
+ORDER BY Country, count DESC;
+
+Table 3: Average Interests per Gender
+SELECT Gender, AVG(num_interests) AS avg_interests
+FROM (
+  SELECT UserID, Gender, COUNT(Interests) AS num_interests
+  FROM SocialMediaUsers
+  GROUP BY UserID, Gender
+) AS subquery
+GROUP BY Gender;
+
+mportant Considerations
+Table Name: In the queries above, I've used SocialMediaUsers as the table name. You'll need to replace this with the actual name of your table.
+Exploding Interests: The original dataset had a list of interests in each row. For these SQL queries to work, you would need to have a table where each interest is on a separate row for each user (like the exploded_df in the Python code).
+Data Types: Make sure your SQL database correctly represents the data types of the columns (e.g., Interests as text).
