@@ -1,0 +1,4 @@
+Difficulties
+The dataset is relatively straightforward, with no missing values. However, the Interests column presents a challenge as it appears to contain lists of interests, which will need to be unpacked for further analysis.
+Interesting Observation
+One interesting aspect of the dataset is the global distribution of users. The dataset includes users from various countries, suggesting a diverse user base for the social media platform. This could be interesting to explore further to understand user demographics and preferences across different regions.
